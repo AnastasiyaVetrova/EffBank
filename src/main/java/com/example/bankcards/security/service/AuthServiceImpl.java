@@ -1,14 +1,13 @@
-package com.example.bankcards.service.impl;
+package com.example.bankcards.security.service;
 
-import com.example.bankcards.dto.UserLoginDto;
-import com.example.bankcards.dto.UserRegisterDto;
+import com.example.bankcards.security.dto.UserLoginDto;
+import com.example.bankcards.security.dto.UserRegisterDto;
 import com.example.bankcards.entity.User;
 import com.example.bankcards.entity.enums.RoleType;
 import com.example.bankcards.exception.PhoneAlreadyExistsException;
 import com.example.bankcards.repository.UserRepository;
 import com.example.bankcards.security.JwtUtil;
-import com.example.bankcards.security.UserDetailsImpl;
-import com.example.bankcards.service.AuthService;
+import com.example.bankcards.security.dto.UserDetailsImpl;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;

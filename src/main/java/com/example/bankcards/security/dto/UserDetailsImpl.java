@@ -1,9 +1,7 @@
-package com.example.bankcards.security;
+package com.example.bankcards.security.dto;
 
 import com.example.bankcards.entity.User;
 import com.example.bankcards.entity.enums.RoleType;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;

@@ -4,4 +4,8 @@ databaseChangeLog:
   - include:
       file: db/migration/changelog/user-roles-table.yaml
   - include:
-      file: db/migration/changelog/card_table.yaml
+      file: db/migration/changelog/card-table.yaml
+  - include:
+      file: db/migration/changelog/init-data.yaml
+  - include:
+      file: db/migration/changelog/card-lock-order-table.yaml

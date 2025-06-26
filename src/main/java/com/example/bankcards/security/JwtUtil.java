@@ -1,7 +1,7 @@
 package com.example.bankcards.security;
 
 import com.example.bankcards.entity.User;
-import com.example.bankcards.entity.enums.RoleType;
+import com.example.bankcards.security.dto.UserDetailsImpl;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
@@ -13,9 +13,6 @@ import org.springframework.stereotype.Component;
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
-import java.util.Set;
-import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Component
 public class JwtUtil {
@@ -34,13 +31,12 @@ public class JwtUtil {
     }
 
     public String generateToken(User user) {
-        Set<String> roles = user.getRoles().stream()
-                .map(RoleType::name)
-                .collect(Collectors.toSet());
+//        Set<String> roles = user.getRoles().stream()
+//                .map(RoleType::name)
+//                .collect(Collectors.toSet());
 
         return Jwts.builder()
                 .setSubject(user.getId().toString())
-                .claim("roles", roles)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + expiration))
                 .signWith(secretKey)
@@ -48,7 +44,9 @@ public class JwtUtil {
     }
 
     public boolean isValidToken(String token, UserDetails userDetails) {
-        return extractUserId(token).equals(userDetails.getUsername()) && isExpired(token);
+        String userIdFromUserDetails = userDetails instanceof UserDetailsImpl
+                ? ((UserDetailsImpl) userDetails).user().getId().toString() : null;
+        return extractUserId(token).equals(userIdFromUserDetails) && !isExpired(token);
     }
 
     public String extractUserId(String token) {

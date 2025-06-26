@@ -1,8 +1,9 @@
 package com.example.bankcards.controller;
 
-import com.example.bankcards.dto.UserLoginDto;
-import com.example.bankcards.dto.UserRegisterDto;
-import com.example.bankcards.service.AuthService;
+import com.example.bankcards.security.dto.UserLoginDto;
+import com.example.bankcards.security.dto.UserRegisterDto;
+import com.example.bankcards.security.service.AuthService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -18,7 +19,7 @@ public class AuthController {
     private final AuthService authService;
 
     @PostMapping("/register")
-    public ResponseEntity<String> register(@RequestBody UserRegisterDto userDto) {
+    public ResponseEntity<String> register(@Valid @RequestBody UserRegisterDto userDto) {
 
         return ResponseEntity.ok(authService.register(userDto));
     }

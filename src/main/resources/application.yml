@@ -6,14 +6,20 @@
 #  - Настроить параметры безопасности и JWT.
 #  - Включить Swagger UI.
 server:
-  port: 8080
+  port: 8443
+  ssl:
+    key-store: classpath:demoKeystore.p12
+    key-store-password: demopass
+    key-alias: springboot
 
 spring:
   datasource:
 #    url: ${SPRING_DATASOURCE_URL}
-    url: jdbc:postgresql://localhost:5432/BankCards
-    username: ${SPRING_DATASOURCE_USERNAME}
-    password: ${SPRING_DATASOURCE_PASSWORD}
+    url: jdbc:postgresql://localhost:5432/${DB_NAME}
+#    username: ${SPRING_DATASOURCE_USERNAME}
+#    password: ${SPRING_DATASOURCE_PASSWORD}
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
     driver-class-name: org.postgresql.Driver
 
   jpa:
@@ -31,8 +37,13 @@ spring:
 #  security:
 #
 jwt:
-  secret: ${secret-key}
+  secret: ${jwt-secret-key}
   expiration: ${expiration-key}
+
+encryption:
+  aes:
+    keyBase64: ${aes-secret-key}
+
 
 springdoc:
   api-docs:
@@ -41,4 +52,8 @@ springdoc:
     path: /v3/api-docs
     csrf:
       enabled: true
+
+logging:
+  level:
+    org.springframework.security: DEBUG
 

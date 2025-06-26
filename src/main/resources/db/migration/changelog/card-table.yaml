@@ -36,7 +36,7 @@ databaseChangeLog:
                   name: balance
                   type: decimal(16,2)
                   constraints:
-                    nullable: true
+                    nullable: false
         - addForeignKeyConstraint:
             baseTableName: cards
             baseColumnNames: user_id

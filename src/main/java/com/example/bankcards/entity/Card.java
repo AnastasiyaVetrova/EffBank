@@ -1,7 +1,9 @@
 package com.example.bankcards.entity;
 
 import com.example.bankcards.entity.enums.CardStatus;
+import com.example.bankcards.util.encryption.CardNumberEncryptionConverter;
 import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -38,6 +40,7 @@ public class Card {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
+    @Convert(converter = CardNumberEncryptionConverter.class)
     @Column(name = "card_number", nullable = false)
     private String cardNumber;
 
@@ -48,5 +51,6 @@ public class Card {
     @Column(nullable = false)
     private CardStatus status;
 
+    @Column(nullable = false)
     private BigDecimal balance;
 }
