@@ -9,7 +9,4 @@ import java.util.Optional;
 public interface CardLockOrderRepository extends JpaRepository<CardLockOrder, Long> {
 
     Optional<CardLockOrder> findFirstByStatusOrderByCreatedAtAsc(OrderStatus orderStatus);
-
-
-
 }

@@ -1,0 +1,938 @@
+openapi: 3.0.1
+info:
+  title: Bank
+  description: Тестовое задание
+  contact:
+    name: Ветрова Анастасия
+    email: Vetrova600@gmail.com
+  version: v1
+servers:
+- url: https://localhost:8443
+  description: Generated server url
+security:
+- bearerAuth: []
+paths:
+  /api/v1/cards:
+    get:
+      tags:
+      - Карты
+      summary: Получение списка карт текущего пользователя (USER)
+      description: |
+        Возвращает список карт, принадлежащих авторизованному пользователю.
+        Доступно только для пользователей с ролью USER.
+        Информация выдается постранично.
+      operationId: getUserCards
+      parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          minimum: 1
+          type: integer
+          format: int32
+          default: 1
+      - name: size
+        in: query
+        required: false
+        schema:
+          minimum: 1
+          type: integer
+          format: int32
+          default: 10
+      responses:
+        "200":
+          description: Список карт успешно получен
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/UserCardsResponse"
+        "403":
+          description: Нет доступа — пользователь не авторизован или недостаточно
+            прав
+          content:
+            text/plain:
+              schema:
+                type: string
+    post:
+      tags:
+      - Карты
+      summary: Создание новой банковской карты (ADMIN)
+      description: |
+        Позволяет администратору создать карту для пользователя.
+        Карта будет активна с начальным балансом и сроком действия в годах.
+      operationId: createCard
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateCardDto"
+        required: true
+      responses:
+        "201":
+          description: Карта успешно создана
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CardResponse"
+        "400":
+          description: Ошибка валидации входных данных
+          content:
+            text/plain:
+              schema:
+                type: string
+        "403":
+          description: Недостаточно прав доступа
+          content:
+            text/plain:
+              schema:
+                type: string
+        "404":
+          description: Пользователь не найден
+          content:
+            text/plain:
+              schema:
+                type: string
+  /api/v1/cards/transfer:
+    post:
+      tags:
+      - Карты
+      summary: Перевод средств между картами пользователя (USER)
+      description: |
+        Позволяет пользователю перевести средства между своими банковскими картами
+      operationId: transfer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TransferRequest"
+        required: true
+      responses:
+        "200":
+          description: Перевод выполнен успешно
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TransferResponse"
+        "400":
+          description: Недостаточно средств или некорректные данные
+          content:
+            text/plain:
+              schema:
+                type: string
+        "403":
+          description: Доступ запрещён
+          content:
+            text/plain:
+              schema:
+                type: string
+        "404":
+          description: Одна из карт не найдена
+          content:
+            text/plain:
+              schema:
+                type: string
+        "409":
+          description: Недостаточно средств
+          content:
+            text/plain:
+              schema:
+                type: string
+  /api/v1/card-lock/request:
+    post:
+      tags:
+      - Блокировка/разблокировка
+      summary: Запрос на блокировку/разблокировку карты (USER)
+      description: |
+        Позволяет пользователю отправить запрос на смену статуса карты (например, заблокировать её).
+        Передавайте `userId`, `cardId` и новый `cardStatus`(принимает значения "ACTIVE", "BLOCKED").
+        Если карта уже находится в заданном статусе — возвращается ошибка.
+      operationId: requestCardLock
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CardLockOrderDto"
+        required: true
+      responses:
+        "200":
+          description: Запрос на изменение статуса карты успешно создан
+          content:
+            application/json:
+              schema:
+                type: integer
+                format: int64
+        "400":
+          description: Некорректные данные запроса или карта уже имеет указанный статус
+          content:
+            text/plain:
+              schema:
+                type: string
+        "403":
+          description: Недостаточно прав доступа
+          content:
+            text/plain:
+              schema:
+                type: string
+        "404":
+          description: Карта не найдена или не принадлежит пользователю
+          content:
+            text/plain:
+              schema:
+                type: string
+  /api/v1/auth/register:
+    post:
+      tags:
+      - Регистрация/Аутентификация
+      summary: Регистрация нового пользователя
+      description: |
+        Создаёт нового пользователя и возвращает JWT токен
+      operationId: register
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserRegisterDto"
+        required: true
+      responses:
+        "200":
+          description: Пользователь успешно зарегистрирован
+          content:
+            text/plain:
+              schema:
+                type: String
+        "400":
+          description: Ошибка валидации или пользователь уже существует
+          content:
+            text/plain:
+              schema:
+                type: String
+        "500":
+          description: Внутренняя ошибка сервера
+          content:
+            text/plain:
+              schema:
+                type: String
+  /api/v1/auth/login:
+    post:
+      tags:
+      - Регистрация/Аутентификация
+      summary: Аутентификация пользователя
+      description: |
+        Авторизует пользователя и возвращает JWT токен
+      operationId: login
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserLoginDto"
+        required: true
+      responses:
+        "200":
+          description: Успешный вход в систему
+          content:
+            text/plain:
+              schema:
+                type: String
+        "401":
+          description: Неверные данные для входа
+          content:
+            text/plain:
+              schema:
+                type: String
+        "500":
+          description: Внутренняя ошибка сервера
+          content:
+            text/plain:
+              schema:
+                type: String
+  /api/v1/users:
+    patch:
+      tags:
+      - Пользователи
+      summary: Обновить данные пользователя (ADMIN)
+      description: |
+        Обновляет информацию о пользователе по переданному идентификатору.
+        Только администратор имеет доступ к этому методу.
+        Обновление происходит частично: поля, отсутствующие в запросе, остаются без изменений.
+      operationId: updateUser
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateUserRequest"
+        required: true
+      responses:
+        "204":
+          description: Данные пользователя успешно обновлены
+        "400":
+          description: Некорректные данные запроса
+        "403":
+          description: Недостаточно прав доступа
+        "404":
+          description: Пользователь не найден
+  /api/v1/users/{userId}/role/{role}:
+    delete:
+      tags:
+      - Пользователи
+      summary: Удалить роль у пользователя (ADMIN)
+      description: |
+        Удаляет указанную роль у пользователя с заданным ID ("USER" или "ADMIN").
+        Требуется наличие прав администратора.
+        Если у пользователя нет такой роли — операция всё равно завершается успешно.
+      operationId: removeRole
+      parameters:
+      - name: userId
+        in: path
+        description: ID пользователя
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: role
+        in: path
+        description: "Роль, которую нужно назначить"
+        required: true
+        schema:
+          type: string
+          enum:
+          - USER
+          - ADMIN
+      responses:
+        "204":
+          description: Роль успешно удалена
+        "403":
+          description: Недостаточно прав доступа
+        "404":
+          description: Пользователь не найден
+    patch:
+      tags:
+      - Пользователи
+      summary: Назначить роль пользователю (ADMIN)
+      description: |
+        Назначает указанную роль пользователю по ID ("USER" или "ADMIN").
+        Требуется наличие прав администратора.
+        Повторное назначение существующей роли не влияет на результат.
+      operationId: addRole
+      parameters:
+      - name: userId
+        in: path
+        description: ID пользователя
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: role
+        in: path
+        description: "Роль, которую нужно назначить"
+        required: true
+        schema:
+          type: string
+          enum:
+          - USER
+          - ADMIN
+      responses:
+        "204":
+          description: Роль успешно назначена
+        "400":
+          description: Некорректные данные или роль уже назначена
+        "403":
+          description: Недостаточно прав доступа
+        "404":
+          description: Пользователь не найден
+  /api/v1/users/first-admin:
+    patch:
+      tags:
+      - Пользователи
+      summary: Назначить первого администратора
+      description: |
+        Назначает текущему пользователю роль ADMIN,
+        если в системе ещё нет пользователей с этой ролью.
+        Повторное выполнение запрещено.
+      operationId: createFirstAdmin
+      responses:
+        "204":
+          description: Роль ADMIN успешно назначена
+        "400":
+          description: Роль ADMIN уже назначена другому пользователю
+        "401":
+          description: Пользователь не аутентифицирован
+  /api/v1/cards/status:
+    patch:
+      tags:
+      - Карты
+      summary: Обновление статуса карты (ADMIN)
+      description: |
+        Позволяет администратору изменить статус карты.
+        Передавайте `userId`, `cardId` и новый `cardStatus`(принимает значения "ACTIVE", "BLOCKED", "EXPIRED").
+        Если карта уже находится в заданном статусе — возвращается ошибка.
+      operationId: updateStatus
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateCardStatusRequest"
+        required: true
+      responses:
+        "204":
+          description: Статус карты успешно обновлён
+        "400":
+          description: Карта уже имеет указанный статус или переданы некорректные
+            данные
+        "403":
+          description: Недостаточно прав для выполнения операции
+        "404":
+          description: Карта не найдена или не принадлежит пользователю
+  /api/v1/card-lock/response:
+    patch:
+      tags:
+      - Блокировка/разблокировка
+      summary: Завершить заказ на блокировку карты (ADMIN)
+      description: |
+        Закрывает заказ на блокировку карты.
+        Заказ должен находиться в статусе `IN_PROGRESS`, в противном случае будет выброшено исключение.
+        Доступно только для пользователей с ролью ADMIN.
+      operationId: closeOrder
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CloseLockOrderDto"
+        required: true
+      responses:
+        "204":
+          description: Заказ успешно закрыт
+        "400":
+          description: Некорректный статус заказа или невалидные данные
+        "403":
+          description: Недостаточно прав доступа
+        "404":
+          description: Заказ не найден
+  /api/v1/card-lock/order:
+    patch:
+      tags:
+      - Блокировка/разблокировка
+      summary: Получить задание на обработку блокировки карты (ADMIN)
+      description: |
+        Возвращает заказ на блокировку карты для администратора.
+        Если `orderId` не передан, выбирается первый доступный заказ со статусом `PENDING`.
+        Заказ переводится в статус `IN_PROGRESS` и привязывается к текущему администратору.
+        Доступно только для пользователей с ролью ADMIN.
+      operationId: getOrder
+      parameters:
+      - name: orderId
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: Заказ на блокировку карты успешно получен
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CardLockProcessingResponse"
+        "403":
+          description: Недостаточно прав доступа
+          content:
+            text/plain:
+              schema:
+                type: string
+        "404":
+          description: Заказ не найден
+          content:
+            text/plain:
+              schema:
+                type: string
+  /api/v1/cards/{cardId}/balance:
+    get:
+      tags:
+      - Карты
+      summary: Получить баланс карты (USER)
+      description: |
+        Позволяет пользователю получить текущий баланс своей банковской карты по её UUID
+      operationId: getBalance
+      parameters:
+      - name: cardId
+        in: path
+        description: ID карты
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: Баланс успешно получен
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BalanceResponse"
+        "404":
+          description: Карта не найдена или не принадлежит пользователю
+          content:
+            text/plain:
+              schema:
+                type: string
+        "403":
+          description: Недостаточно прав доступа
+          content:
+            text/plain:
+              schema:
+                type: string
+  /api/v1/cards/all:
+    get:
+      tags:
+      - Карты
+      summary: Получение всех карт (ADMIN)
+      description: |
+        Возвращает постраничный список всех карт в системе.
+        Доступно только для пользователей с ролью ADMIN.
+        Поддерживается сортировка и пагинация.
+      operationId: getAllCards
+      parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          minimum: 1
+          type: integer
+          format: int32
+          default: 1
+      - name: size
+        in: query
+        required: false
+        schema:
+          minimum: 1
+          type: integer
+          format: int32
+          default: 50
+      - name: sortBy
+        in: query
+        description: сортировка по полю
+        required: false
+        schema:
+          type: string
+          enum:
+          - user
+          - cardNumber
+          - expirationDate
+          - status
+          - balance
+      - name: sortDir
+        in: query
+        required: false
+        schema:
+          type: string
+          enum:
+          - desc
+          - asc
+      responses:
+        "200":
+          description: Список карт успешно получен
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CardResponse"
+        "400":
+          description: Некорректные параметры сортировки или пагинации
+          content:
+            text/plain:
+              schema:
+                type: string
+        "403":
+          description: Нет доступа — недостаточно прав
+          content:
+            text/plain:
+              schema:
+                type: string
+  /api/v1/cards/{cardId}/users/{userId}:
+    delete:
+      tags:
+      - Карты
+      summary: Удалить карту пользователя (ADMIN)
+      description: |
+        Удаляет карту с указанным ID, если её баланс равен 0.
+        Доступно только для администратора.
+      operationId: deleteCard
+      parameters:
+      - name: cardId
+        in: path
+        description: ID карты
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: userId
+        in: path
+        description: ID пользователя
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "204":
+          description: Карта успешно удалена
+        "400":
+          description: Баланс карты не равен 0
+        "403":
+          description: Недостаточно прав доступа
+        "404":
+          description: Карта не найдена или не принадлежит пользователю
+components:
+  schemas:
+    CardResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          description: ID карты
+          format: uuid
+          example: 123e4567-e89b-12d3-a456-426614174000
+        userId:
+          type: string
+          description: ID владельца карты
+          format: uuid
+          example: 123e4567-e89b-12d3-a456-426614174000
+        cardNumber:
+          type: string
+          description: Номер карты (маскированный)
+          example: '**** **** **** 1234'
+        expirationDate:
+          type: string
+          description: Срок действия карты
+          format: date
+          example: 2025-12-31
+        status:
+          type: string
+          description: Статус банковской карты
+          example: ACTIVE
+          enum:
+          - ACTIVE
+          - BLOCKED
+          - EXPIRED
+        balance:
+          type: number
+          description: Баланс карты
+          example: 1000.0
+      description: Информация о карте
+    CreateCardDto:
+      required:
+      - balance
+      - userId
+      - validityPeriodYears
+      type: object
+      properties:
+        userId:
+          type: string
+          description: "ID пользователя, для которого создается карта"
+          format: uuid
+          example: 123e4567-e89b-12d3-a456-426614174000
+        validityPeriodYears:
+          maximum: 5
+          minimum: 1
+          type: integer
+          description: Срок действия карты в годах (от 1 до 5 лет)
+          format: int32
+          example: 3
+        balance:
+          minimum: 0.01
+          exclusiveMinimum: false
+          type: number
+          description: Начальный баланс карты
+          example: 1000.0
+      description: DTO для создания новой банковской карты
+    TransferResponse:
+      type: object
+      properties:
+        fromCardId:
+          type: string
+          description: "ID карты, с которой был выполнен перевод"
+          format: uuid
+          example: 123e4567-e89b-12d3-a456-426614174000
+        fromCardBalanceAfter:
+          type: number
+          description: Оставшийся баланс на карте отправителя после перевода
+          example: 1000.0
+        toCardId:
+          type: string
+          description: "ID карты, на которую был выполнен перевод"
+          format: uuid
+          example: 123e4567-e89b-12d3-a456-426614174000
+        toCardBalanceAfter:
+          type: number
+          description: Баланс карты получателя после перевода
+          example: 2500.5
+      description: Ответ на успешный перевод средств между картами
+    TransferRequest:
+      required:
+      - amount
+      - fromCardId
+      - toCardId
+      type: object
+      properties:
+        fromCardId:
+          type: string
+          description: "ID карты, с которой осуществляется перевод"
+          format: uuid
+          example: 123e4567-e89b-12d3-a456-426614174000
+        toCardId:
+          type: string
+          description: "ID карты, на которую осуществляется перевод"
+          format: uuid
+          example: 123e4567-e89b-12d3-a456-426614174000
+        amount:
+          maximum: 50000.00
+          exclusiveMaximum: false
+          minimum: 0.01
+          exclusiveMinimum: false
+          type: number
+          description: Сумма перевода
+          example: 999.99
+      description: Запрос на перевод средств с одной карты на другую
+    CardLockOrderDto:
+      required:
+      - cardId
+      - reason
+      - requestedStatus
+      type: object
+      properties:
+        cardId:
+          type: string
+          description: "ID карты, для которой меняется статус"
+          format: uuid
+          example: 123e4567-e89b-12d3-a456-426614174000
+        requestedStatus:
+          type: string
+          description: Статус банковской карты
+          example: BLOCKED
+          enum:
+          - ACTIVE
+          - BLOCKED
+          - EXPIRED
+        reason:
+          maxLength: 255
+          minLength: 0
+          type: string
+          description: Причина блокировки/разблокировки
+          example: Пользователь сообщил о краже карты
+      description: Запрос на изменение статуса карты (блокировка/разблокировка)
+    UserRegisterDto:
+      required:
+      - name
+      - password
+      - phone
+      - surname
+      type: object
+      properties:
+        name:
+          type: string
+          description: Имя пользователя
+          example: Алексей
+        surname:
+          type: string
+          description: Фамилия пользователя
+          example: Иванов
+        phone:
+          pattern: "\\+7\\d{10}"
+          type: string
+          description: Телефон в формате +7XXXXXXXXXX
+          example: "+79998887766"
+        password:
+          pattern: "^(?=.*[A-Za-z])(?=.*\\d).{8,}$"
+          type: string
+          description: "Пароль (минимум 8 символов, буквы и цифры)"
+          example: Pass1234
+    UserLoginDto:
+      type: object
+      properties:
+        phone:
+          type: string
+          description: Номер телефона пользователя
+          example: "+71234567890"
+        password:
+          type: string
+          description: Пароль пользователя
+          example: Password123
+    UpdateUserRequest:
+      required:
+      - id
+      type: object
+      properties:
+        id:
+          type: string
+          description: ID пользователя
+          format: uuid
+          example: 123e4567-e89b-12d3-a456-426614174000
+        name:
+          type: string
+          description: Имя пользователя
+          example: Иван
+        surname:
+          type: string
+          description: Фамилия пользователя
+          example: Иванов
+        phone:
+          pattern: "\\+7\\d{10}"
+          type: string
+          description: Телефон пользователя
+          example: "+79001234567"
+      description: |-
+        **Передавайте только ID и поля, которые хотите изменить.**
+
+        Запрос на обновление данных пользователя.
+    UpdateCardStatusRequest:
+      required:
+      - cardId
+      - cardStatus
+      - userId
+      type: object
+      properties:
+        userId:
+          type: string
+          description: ID пользователя
+          format: uuid
+          example: 123e4567-e89b-12d3-a456-426614174000
+        cardId:
+          type: string
+          description: ID карты
+          format: uuid
+          example: 123e4567-e89b-12d3-a456-426614174000
+        cardStatus:
+          type: string
+          description: Статус банковской карты
+          enum:
+          - ACTIVE
+          - BLOCKED
+          - EXPIRED
+      description: Запрос на обновление статуса карты
+    CloseLockOrderDto:
+      required:
+      - id
+      - status
+      type: object
+      properties:
+        id:
+          type: integer
+          description: ID заявки на блокировку
+          format: int64
+          example: 1
+        status:
+          type: string
+          description: Статус заказа
+          example: APPROVED
+          enum:
+          - PENDING
+          - IN_PROGRESS
+          - APPROVED
+          - REJECTED
+        adminComment:
+          maxLength: 255
+          minLength: 0
+          type: string
+          description: Комментарий администратора
+          example: "Проверка завершена, блокировка одобрена"
+      description: DTO для закрытия заявки на блокировку карты
+    CardLockProcessingResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: ID заявки
+          format: int64
+          example: 1
+        userId:
+          type: string
+          description: "ID пользователя, подавшего заявку"
+          format: uuid
+          example: 123e4567-e89b-12d3-a456-426614174000
+        cardId:
+          type: string
+          description: "ID карты, которой нужно поменять статус"
+          format: uuid
+          example: 123e4567-e89b-12d3-a456-426614174000
+        adminId:
+          type: string
+          description: "ID администратора, обработавшего заявку"
+          format: uuid
+          nullable: true
+          example: 123e4567-e89b-12d3-a456-426614174000
+        requestedStatus:
+          type: string
+          description: Статус банковской карты
+          example: BLOCKED
+          enum:
+          - ACTIVE
+          - BLOCKED
+          - EXPIRED
+        reason:
+          type: string
+          description: Причина изменения статуса
+          example: Подозрение на мошенничество
+        createdAt:
+          type: string
+          description: Дата создания заявки
+          format: date
+          example: 2025-06-27
+        adminComment:
+          type: string
+          description: Комментарий администратора
+          nullable: true
+          example: Подтверждено
+        status:
+          type: string
+          description: Статус заказа
+          example: IN_PROGRESS
+          enum:
+          - PENDING
+          - IN_PROGRESS
+          - APPROVED
+          - REJECTED
+      description: Информация о заявке на блокировку/разблокировку карты
+    UserCardsResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          description: ID карты
+          format: uuid
+          example: 123e4567-e89b-12d3-a456-426614174000
+        cardNumber:
+          type: string
+          description: Номер карты (маскированный)
+          example: '**** **** **** 1234'
+        expirationDate:
+          type: string
+          description: Дата окончания действия карты
+          format: date
+          example: 2025-12-31
+        status:
+          type: string
+          description: Статус банковской карты
+          example: ACTIVE
+          enum:
+          - ACTIVE
+          - BLOCKED
+          - EXPIRED
+      description: Ответ с информацией по карте пользователя
+    BalanceResponse:
+      type: object
+      properties:
+        cardId:
+          type: string
+          description: ID карты
+          format: uuid
+          example: 123e4567-e89b-12d3-a456-426614174000
+        balance:
+          type: number
+          description: Баланс карты
+          example: 1500.75
+      description: Ответ с информацией о балансе карты
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

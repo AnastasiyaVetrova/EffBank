@@ -23,6 +23,7 @@ public class UserDetailsServiceImpl implements ExtendedUserDetailsService {
         return new UserDetailsImpl(user);
     }
 
+    @Override
     public UserDetails loadUserById(UUID id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));

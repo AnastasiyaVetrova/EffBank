@@ -31,9 +31,6 @@ public class JwtUtil {
     }
 
     public String generateToken(User user) {
-//        Set<String> roles = user.getRoles().stream()
-//                .map(RoleType::name)
-//                .collect(Collectors.toSet());
 
         return Jwts.builder()
                 .setSubject(user.getId().toString())
@@ -46,14 +43,17 @@ public class JwtUtil {
     public boolean isValidToken(String token, UserDetails userDetails) {
         String userIdFromUserDetails = userDetails instanceof UserDetailsImpl
                 ? ((UserDetailsImpl) userDetails).user().getId().toString() : null;
+
         return extractUserId(token).equals(userIdFromUserDetails) && !isExpired(token);
     }
 
     public String extractUserId(String token) {
+
         return getClaims(token).getSubject();
     }
 
     private Claims getClaims(String token) {
+
         return Jwts.parserBuilder()
                 .setSigningKey(secretKey)
                 .build()
@@ -62,6 +62,7 @@ public class JwtUtil {
     }
 
     private boolean isExpired(String token) {
+
         return getClaims(token).getExpiration().before(new Date());
     }
 }

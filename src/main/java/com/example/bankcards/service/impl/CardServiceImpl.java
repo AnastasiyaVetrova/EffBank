@@ -1,12 +1,12 @@
 package com.example.bankcards.service.impl;
 
-import com.example.bankcards.dto.BalanceResponse;
-import com.example.bankcards.dto.CardResponse;
-import com.example.bankcards.dto.CreateCardDto;
-import com.example.bankcards.dto.TransferRequest;
-import com.example.bankcards.dto.TransferResponse;
-import com.example.bankcards.dto.UpdateCardStatusRequest;
-import com.example.bankcards.dto.UserCardsResponse;
+import com.example.bankcards.dto.response.BalanceResponse;
+import com.example.bankcards.dto.response.CardResponse;
+import com.example.bankcards.dto.request.CreateCardDto;
+import com.example.bankcards.dto.request.TransferRequest;
+import com.example.bankcards.dto.response.TransferResponse;
+import com.example.bankcards.dto.request.UpdateCardStatusRequest;
+import com.example.bankcards.dto.response.UserCardsResponse;
 import com.example.bankcards.dto.mapper.CardMapper;
 import com.example.bankcards.entity.Card;
 import com.example.bankcards.entity.User;
@@ -119,9 +119,13 @@ public class CardServiceImpl implements CardService {
         Card fromCard = findCardOrThrow(request.fromCardId(), userId);
         Card toCard = findCardOrThrow(request.toCardId(), userId);
 
-        if (fromCard.getBalance() == null || fromCard.getBalance().compareTo(request.amount()) < 0) {
-            throw new InsufficientBalanceException(fromCard.getId());
+        if (toCard.getStatus() != CardStatus.ACTIVE) {
+            throw new BadRequestException("The transfer card is not active");
         }
+
+            if (fromCard.getBalance() == null || fromCard.getBalance().compareTo(request.amount()) < 0) {
+                throw new InsufficientBalanceException(fromCard.getId());
+            }
 
         fromCard.setBalance(fromCard.getBalance().subtract(request.amount()));
 

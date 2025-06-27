@@ -7,6 +7,7 @@ public class NoBlankSpacesValidator implements ConstraintValidator<NoBlankSpaces
 
     @Override
     public boolean isValid(String value, ConstraintValidatorContext constraintValidatorContext) {
+
         return value == null || !value.trim().isEmpty();
     }
 }

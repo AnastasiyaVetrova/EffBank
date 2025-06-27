@@ -1,7 +1,7 @@
 package com.example.bankcards.dto.mapper;
 
-import com.example.bankcards.dto.CardResponse;
-import com.example.bankcards.dto.UserCardsResponse;
+import com.example.bankcards.dto.response.CardResponse;
+import com.example.bankcards.dto.response.UserCardsResponse;
 import com.example.bankcards.entity.Card;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;

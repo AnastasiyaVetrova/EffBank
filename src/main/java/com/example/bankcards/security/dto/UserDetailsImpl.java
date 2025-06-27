@@ -10,14 +10,13 @@ import java.util.Collection;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-
 public record UserDetailsImpl(User user) implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         Set<RoleType> roles = user.getRoles();
         return roles.stream()
-                .map(role -> new SimpleGrantedAuthority("ROLE_".concat(role.name())))
+                .map(role -> new SimpleGrantedAuthority("ROLE_" .concat(role.name())))
                 .collect(Collectors.toSet());
     }
 

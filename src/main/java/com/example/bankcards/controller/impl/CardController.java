@@ -1,20 +1,21 @@
-package com.example.bankcards.controller;
+package com.example.bankcards.controller.impl;
 
-import com.example.bankcards.dto.BalanceResponse;
-import com.example.bankcards.dto.CardResponse;
-import com.example.bankcards.dto.CreateCardDto;
-import com.example.bankcards.dto.TransferRequest;
-import com.example.bankcards.dto.TransferResponse;
-import com.example.bankcards.dto.UpdateCardStatusRequest;
-import com.example.bankcards.dto.UserCardsResponse;
+import com.example.bankcards.controller.openapi.CardApi;
+import com.example.bankcards.dto.response.BalanceResponse;
+import com.example.bankcards.dto.response.CardResponse;
+import com.example.bankcards.dto.request.CreateCardDto;
+import com.example.bankcards.dto.request.TransferRequest;
+import com.example.bankcards.dto.response.TransferResponse;
+import com.example.bankcards.dto.request.UpdateCardStatusRequest;
+import com.example.bankcards.dto.response.UserCardsResponse;
 import com.example.bankcards.security.service.AuthenticatedUserService;
 import com.example.bankcards.service.CardService;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 
@@ -23,9 +24,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -34,24 +33,24 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api/v1/cards")
 @RequiredArgsConstructor
-public class CardController {
+public class CardController implements CardApi {
 
     private final CardService cardService;
     private final AuthenticatedUserService authenticatedUserService;
 
     @PostMapping()
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<CardResponse> createCard(@Valid @RequestBody CreateCardDto dto) {
+    public ResponseEntity<CardResponse> createCard(CreateCardDto dto) {
 
-        return ResponseEntity.ok(cardService.createCard(dto));
+        return ResponseEntity.status(HttpStatus.CREATED).body(cardService.createCard(dto));
     }
 
     @GetMapping()
-    public ResponseEntity<List<UserCardsResponse>> getCard(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<List<UserCardsResponse>> getUserCards(int page, int size) {
+
         UUID userId = authenticatedUserService.getCurrentUserId();
-        Pageable pageable = PageRequest.of(page, size);
+        Pageable pageable = PageRequest.of(page - 1, size);
 
         return ResponseEntity.ok(cardService.getCards(userId, pageable));
     }
@@ -59,20 +58,17 @@ public class CardController {
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/all")
     public ResponseEntity<Page<CardResponse>> getAllCards(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "50") int size,
-            @RequestParam(defaultValue = "expirationDate") String sortBy,
-            @RequestParam(defaultValue = "desc") String sortDir
-    ) {
+            int page, int size, String sortBy, String sortDir) {
+
         Sort.Direction direction = sortDir.equals("desc") ? Sort.Direction.DESC : Sort.Direction.ASC;
-        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
+        Pageable pageable = PageRequest.of(page - 1, size, Sort.by(direction, sortBy));
 
         return ResponseEntity.ok(cardService.getAllCards(pageable));
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     @PatchMapping("/status")
-    public ResponseEntity<Void> updateStatus(@RequestBody @Valid UpdateCardStatusRequest request) {
+    public ResponseEntity<Void> updateStatus(UpdateCardStatusRequest request) {
 
         cardService.updateCardStatus(request);
 
@@ -80,8 +76,8 @@ public class CardController {
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    @DeleteMapping("/users/{userId}/cards/{cardId}")
-    public ResponseEntity<Void> deleteCard(@PathVariable UUID userId, @PathVariable UUID cardId) {
+    @DeleteMapping("/{cardId}/users/{userId}")
+    public ResponseEntity<Void> deleteCard(@PathVariable UUID cardId, @PathVariable UUID userId) {
 
         cardService.delete(userId, cardId);
 
@@ -98,7 +94,7 @@ public class CardController {
 
     @PreAuthorize("hasRole('USER')")
     @PostMapping("/transfer")
-    public ResponseEntity<TransferResponse> transfer(@Valid @RequestBody TransferRequest request) {
+    public ResponseEntity<TransferResponse> transfer(TransferRequest request) {
         UUID userId = authenticatedUserService.getCurrentUserId();
 
         return ResponseEntity.ok(cardService.transfer(userId, request));

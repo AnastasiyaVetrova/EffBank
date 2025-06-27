@@ -1,7 +1,6 @@
 package com.example.bankcards.entity;
 
 import com.example.bankcards.entity.enums.RoleType;
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
@@ -25,7 +24,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.TreeSet;
 import java.util.UUID;
 
 @Entity

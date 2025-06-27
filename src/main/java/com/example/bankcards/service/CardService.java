@@ -1,12 +1,12 @@
 package com.example.bankcards.service;
 
-import com.example.bankcards.dto.BalanceResponse;
-import com.example.bankcards.dto.CardResponse;
-import com.example.bankcards.dto.CreateCardDto;
-import com.example.bankcards.dto.TransferRequest;
-import com.example.bankcards.dto.TransferResponse;
-import com.example.bankcards.dto.UpdateCardStatusRequest;
-import com.example.bankcards.dto.UserCardsResponse;
+import com.example.bankcards.dto.response.BalanceResponse;
+import com.example.bankcards.dto.response.CardResponse;
+import com.example.bankcards.dto.request.CreateCardDto;
+import com.example.bankcards.dto.request.TransferRequest;
+import com.example.bankcards.dto.response.TransferResponse;
+import com.example.bankcards.dto.request.UpdateCardStatusRequest;
+import com.example.bankcards.dto.response.UserCardsResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 

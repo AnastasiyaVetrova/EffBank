@@ -1,11 +1,10 @@
-package com.example.bankcards.controller;
+package com.example.bankcards.controller.impl;
 
-import com.example.bankcards.dto.UpdateUserRequest;
+import com.example.bankcards.controller.openapi.UserApi;
+import com.example.bankcards.dto.request.UpdateUserRequest;
 import com.example.bankcards.entity.enums.RoleType;
 import com.example.bankcards.security.service.AuthenticatedUserService;
 import com.example.bankcards.service.UserService;
-import io.swagger.v3.oas.annotations.parameters.RequestBody;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -20,7 +19,7 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api/v1/users")
 @RequiredArgsConstructor
-public class UserController {
+public class UserController implements UserApi {
 
     private final UserService userService;
     private final AuthenticatedUserService authenticatedUserService;
@@ -53,8 +52,8 @@ public class UserController {
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    @PatchMapping("/update")
-    public ResponseEntity<Void> update(@Valid @RequestBody UpdateUserRequest dto) {
+    @PatchMapping()
+    public ResponseEntity<Void> updateUser(UpdateUserRequest dto) {
 
         userService.updateUser(dto);
 

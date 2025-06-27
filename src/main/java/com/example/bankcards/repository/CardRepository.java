@@ -1,6 +1,6 @@
 package com.example.bankcards.repository;
 
-import com.example.bankcards.dto.BalanceResponse;
+import com.example.bankcards.dto.response.BalanceResponse;
 import com.example.bankcards.entity.Card;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -18,7 +18,7 @@ public interface CardRepository extends JpaRepository<Card, UUID> {
     Optional<Card> findByIdAndUserId(UUID cardId, UUID userId);
 
     @Query("""
-                SELECT new com.example.bankcards.dto.BalanceResponse(c.id,c.balance)
+                SELECT new com.example.bankcards.dto.response.BalanceResponse(c.id,c.balance)
                 FROM Card c
                 WHERE c.id=:cardId AND c.user.id=:userId
             """)

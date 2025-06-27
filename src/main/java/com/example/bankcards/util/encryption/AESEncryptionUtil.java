@@ -1,8 +1,6 @@
 package com.example.bankcards.util.encryption;
 
 import jakarta.annotation.PostConstruct;
-
-
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -72,7 +70,6 @@ public class AESEncryptionUtil {
             System.arraycopy(encryptedWithIV, 0, iv, 0, IV_SIZE);
             System.arraycopy(encryptedWithIV, IV_SIZE, encryptedBytes, 0, encryptedBytes.length);
 
-
             Cipher cipher = Cipher.getInstance(ALGORITHM);
             cipher.init(Cipher.DECRYPT_MODE, secretKeySpec, new IvParameterSpec(iv));
 
@@ -91,4 +88,3 @@ public class AESEncryptionUtil {
         return iv;
     }
 }
-

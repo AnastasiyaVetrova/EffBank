@@ -1,7 +1,7 @@
 package com.example.bankcards.service.impl;
 
-import com.example.bankcards.dto.UpdateUserRequest;
 import com.example.bankcards.dto.mapper.UserMapper;
+import com.example.bankcards.dto.request.UpdateUserRequest;
 import com.example.bankcards.entity.User;
 import com.example.bankcards.entity.enums.RoleType;
 import com.example.bankcards.exception.BadRequestException;
