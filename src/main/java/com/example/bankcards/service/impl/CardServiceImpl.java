@@ -123,9 +123,9 @@ public class CardServiceImpl implements CardService {
             throw new BadRequestException("The transfer card is not active");
         }
 
-            if (fromCard.getBalance() == null || fromCard.getBalance().compareTo(request.amount()) < 0) {
-                throw new InsufficientBalanceException(fromCard.getId());
-            }
+        if (fromCard.getBalance() == null || fromCard.getBalance().compareTo(request.amount()) < 0) {
+            throw new InsufficientBalanceException(fromCard.getId());
+        }
 
         fromCard.setBalance(fromCard.getBalance().subtract(request.amount()));
 

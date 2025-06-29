@@ -201,19 +201,19 @@ paths:
           content:
             text/plain:
               schema:
-                type: String
+                type: string
         "400":
           description: Ошибка валидации или пользователь уже существует
           content:
             text/plain:
               schema:
-                type: String
+                type: string
         "500":
           description: Внутренняя ошибка сервера
           content:
             text/plain:
               schema:
-                type: String
+                type: string
   /api/v1/auth/login:
     post:
       tags:
@@ -234,19 +234,19 @@ paths:
           content:
             text/plain:
               schema:
-                type: String
+                type: string
         "401":
           description: Неверные данные для входа
           content:
             text/plain:
               schema:
-                type: String
+                type: string
         "500":
           description: Внутренняя ошибка сервера
           content:
             text/plain:
               schema:
-                type: String
+                type: string
   /api/v1/users:
     patch:
       tags:
@@ -756,7 +756,7 @@ components:
         password:
           type: string
           description: Пароль пользователя
-          example: Password123
+          example: Pass1234
     UpdateUserRequest:
       required:
       - id
