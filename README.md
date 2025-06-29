@@ -15,7 +15,7 @@
 ## 🚀 Быстрый старт с Docker
 
 ```bash
-git clone 
+git clone https://github.com/AnastasiyaVetrova/EffBank.git
 ```
 
 > Либо скачайте `.zip` архив с GitHub и распакуйте его вручную.
